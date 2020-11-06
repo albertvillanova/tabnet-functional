@@ -118,9 +118,9 @@ for ni in range(NUM_DECISION_STEPS):
 
         # Entropy is used to penalize the amount of sparsity in feature
         # selection.
-        total_entropy += tf.math.reduce_mean(
-            tf.math.reduce_sum(-mask_values * tf.log(mask_values + EPSILON),
-                               axis=1)) / (NUM_DECISION_STEPS - 1)
+        total_entropy += tf.math.reduce_mean(tf.math.reduce_sum(
+            -mask_values * tf.math.log(mask_values + EPSILON), axis=1)) / (
+                                     NUM_DECISION_STEPS - 1)
 
         # Feature selection
         masked_features = tf.math.multiply(mask_values, features)
