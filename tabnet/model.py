@@ -89,9 +89,8 @@ for ni in range(NUM_DECISION_STEPS):
         output_aggregated += decision_out
         # Aggregated masks are used for visualization of the
         # feature importance attributes
-        scale_agg = tf.reduce_sum(
-            decision_out, axis=1, keep_dims=True) / (
-                            NUM_DECISION_STEPS - 1)
+        scale_agg = tf.math.reduce_sum(decision_out, axis=1, keepdims=True) / (
+                    NUM_DECISION_STEPS - 1)
         aggregated_mask_values += mask_values * scale_agg
 
     #
