@@ -3,16 +3,19 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
+import tensorflow_addons as tfa
 
 from .layers import GLU
 
 # TODO: refactorize as config
 BATCH_MOMENTUM = 0.7
 BATCH_SIZE = 32
+EPSILON = 0.00001
 FEATURE_DIM = 4
 NUM_DECISION_STEPS = 6
 NUM_FEATURES = 54
 OUTPUT_DIM = 2
+RELAXATION_FACTOR = 1.5
 VIRTUAL_BATCH_SIZE = 4
 
 
@@ -91,3 +94,37 @@ for ni in range(NUM_DECISION_STEPS):
 
     #
     features_for_coef = (x[:, OUTPUT_DIM:])
+
+    #
+    if ni < NUM_DECISION_STEPS - 1:
+        # Determine the feature masks via linear and nonlinear
+        # transformations, taking into account of aggregated feature use
+        mask_values = keras.layers.Dense(
+            NUM_FEATURES, use_bias=False,
+            name=f'transform_coef_{ni}')(features_for_coef)
+        mask_values = keras.layers.BatchNormalization(
+            momentum=BATCH_MOMENTUM,
+            virtual_batch_size=VIRTUAL_BATCH_SIZE)(mask_values)
+        mask_values *= complementary_aggregated_mask_values
+        mask_values = tfa.layers.Sparsemax()(mask_values)
+
+        # Relaxation factor controls the amount of reuse of features between
+        # different decision blocks and updated with the values of
+        # coefficients.
+        complementary_aggregated_mask_values *= (
+                RELAXATION_FACTOR - mask_values)
+
+        # Entropy is used to penalize the amount of sparsity in feature
+        # selection.
+        total_entropy += tf.math.reduce_mean(
+            tf.math.reduce_sum(-mask_values * tf.log(mask_values + EPSILON),
+                               axis=1)) / (NUM_DECISION_STEPS - 1)
+
+        # Feature selection
+        masked_features = tf.math.multiply(mask_values, features)
+
+        # Visualization of the feature selection mask at decision step ni
+        tf.summary.image(
+            f"Mask for step {ni}",
+            tf.expand_dims(tf.expand_dims(mask_values, 0), 3),
+            max_outputs=1)
