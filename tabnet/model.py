@@ -46,6 +46,8 @@ transform_f1 = keras.layers.Dense(FEATURE_DIM * 2, use_bias=False,
 transform_f2 = keras.layers.Dense(FEATURE_DIM * 2, use_bias=False,
                                   name='transform_f2')  # TODO: remove name
 
+# Input: masked_features
+# Output: output_aggregated, total_entropy
 for ni in range(NUM_DECISION_STEPS):
     # Feature transformer with two shared and two decision step dependent
     # blocks
@@ -128,3 +130,13 @@ for ni in range(NUM_DECISION_STEPS):
             f"Mask for step {ni}",
             tf.expand_dims(tf.expand_dims(mask_values, 0), 3),
             max_outputs=1)
+
+# Visualization of the aggregated feature importances
+tf.summary.image(
+    "Aggregated mask",
+    tf.expand_dims(tf.expand_dims(aggregated_mask_values, 0), 3),
+    max_outputs=1)
+
+outputs = (output_aggregated, total_entropy)
+
+encoder = keras.Model(inputs=inputs, outputs=outputs)
