@@ -12,6 +12,7 @@ BATCH_MOMENTUM = 0.7
 BATCH_SIZE = 32
 EPSILON = 0.00001
 FEATURE_DIM = 4
+NUM_CLASSES = 7
 NUM_DECISION_STEPS = 6
 NUM_FEATURES = 54
 OUTPUT_DIM = 2
@@ -138,4 +139,19 @@ tf.summary.image(
 
 outputs = (output_aggregated, total_entropy)
 
-encoder = keras.Model(inputs=inputs, outputs=outputs)
+encoder = keras.Model(inputs=inputs, outputs=outputs, name='encoder')
+
+# Classifier
+logits = keras.layers.Dense(NUM_CLASSES, use_bias=False)(output_aggregated)
+# predictions = tf.nn.softmax(logits)
+# return logits, predictions
+classifier_outputs = (logits, total_entropy)
+classifier = keras.Model(inputs=inputs, outputs=classifier_outputs,
+                         name='classifier')
+
+# Regressor
+predictions = keras.layers.Dense(1)(output_aggregated)
+regressor_outputs = (predictions, total_entropy)
+# return predictions
+regressor = keras.Model(inputs=inputs, outputs=regressor_outputs,
+                        name='regressor')
