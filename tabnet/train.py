@@ -10,6 +10,8 @@ INITIAL_LEARNING_RATE = 0.02  # INIT_LEARNING_RATE
 
 
 # TODO: model returns not only logits but (logits, total_entropy)
+# - name outputs
+# - define loss with a dict
 
 # TODO: customize loss with total_entropy
 loss = keras.losses.SparseCategoricalCrossentropy(from_logits=True)
@@ -19,8 +21,10 @@ learning_rate = keras.optimizers.schedules.ExponentialDecay(
 )
 optimizer = keras.optimizer.AdamOptimizer(learning_rate=learning_rate)
 
+metrics = [keras.metrics.SparseCategoricalAccuracy()]
+
 model.compile(
     loss=loss,
     optimizer=optimizer,
-    metrics=["accuracy"],
+    metrics=metrics,
 )
