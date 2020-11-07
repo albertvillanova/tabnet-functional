@@ -9,10 +9,6 @@ DECAY_STEPS = 500  # DECAY_EVERY
 INITIAL_LEARNING_RATE = 0.02  # INIT_LEARNING_RATE
 
 
-# TODO: model returns not only logits but (logits, total_entropy)
-# - name outputs
-# - define loss with a dict
-
 # TODO: customize loss with total_entropy
 loss = keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 

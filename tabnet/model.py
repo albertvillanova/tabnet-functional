@@ -137,21 +137,22 @@ tf.summary.image(
     tf.expand_dims(tf.expand_dims(aggregated_mask_values, 0), 3),
     max_outputs=1)
 
-outputs = (output_aggregated, total_entropy)
+# Encoder
+# return output_aggregated, total_entropy
+encoder = keras.Model(inputs=inputs, outputs=output_aggregated, name='encoder')
+# TODO: use total_entropy for loss
 
-encoder = keras.Model(inputs=inputs, outputs=outputs, name='encoder')
 
 # Classifier
 logits = keras.layers.Dense(NUM_CLASSES, use_bias=False)(output_aggregated)
 # predictions = tf.nn.softmax(logits)
 # return logits, predictions
-classifier_outputs = (logits, total_entropy)
-classifier = keras.Model(inputs=inputs, outputs=classifier_outputs,
-                         name='classifier')
+classifier = keras.Model(inputs=inputs, outputs=logits, name='classifier')
+# TODO: use total_entropy for loss
+
 
 # Regressor
 predictions = keras.layers.Dense(1)(output_aggregated)
-regressor_outputs = (predictions, total_entropy)
 # return predictions
-regressor = keras.Model(inputs=inputs, outputs=regressor_outputs,
-                        name='regressor')
+regressor = keras.Model(inputs=inputs, outputs=predictions, name='regressor')
+# TODO: use total_entropy for loss
