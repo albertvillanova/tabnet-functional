@@ -17,8 +17,8 @@ NUM_DECISION_STEPS = 6
 NUM_FEATURES = 54
 OUTPUT_DIM = 2
 RELAXATION_FACTOR = 1.5
+SPARSITY_LOSS_WEIGHT = 0.0001
 VIRTUAL_BATCH_SIZE = 4
-
 
 # Input features
 # TODO: fix shape with embeddings
@@ -91,7 +91,7 @@ for ni in range(NUM_DECISION_STEPS):
         # Aggregated masks are used for visualization of the
         # feature importance attributes
         scale_agg = tf.math.reduce_sum(decision_out, axis=1, keepdims=True) / (
-                    NUM_DECISION_STEPS - 1)
+                NUM_DECISION_STEPS - 1)
         aggregated_mask_values += mask_values * scale_agg
 
     #
@@ -120,7 +120,7 @@ for ni in range(NUM_DECISION_STEPS):
         # selection.
         total_entropy += tf.math.reduce_mean(tf.math.reduce_sum(
             -mask_values * tf.math.log(mask_values + EPSILON), axis=1)) / (
-                                     NUM_DECISION_STEPS - 1)
+                NUM_DECISION_STEPS - 1)
 
         # Feature selection
         masked_features = tf.math.multiply(mask_values, features)
@@ -140,7 +140,6 @@ tf.summary.image(
 # Encoder
 # return output_aggregated, total_entropy
 encoder = keras.Model(inputs=inputs, outputs=output_aggregated, name='encoder')
-# TODO: use total_entropy for loss
 
 
 # Classifier
@@ -148,11 +147,24 @@ logits = keras.layers.Dense(NUM_CLASSES, use_bias=False)(output_aggregated)
 # predictions = tf.nn.softmax(logits)
 # return logits, predictions
 classifier = keras.Model(inputs=inputs, outputs=logits, name='classifier')
-# TODO: use total_entropy for loss
 
 
 # Regressor
 predictions = keras.layers.Dense(1)(output_aggregated)
 # return predictions
 regressor = keras.Model(inputs=inputs, outputs=predictions, name='regressor')
-# TODO: use total_entropy for loss
+
+
+# Custom loss: total_entropy is used to penalize the amount of sparsity in
+# feature selection
+def custom_loss(sparsity_loss_weight, total_entropy):
+    def loss(y_true, y_pred):
+        return keras.losses.SparseCategoricalCrossentropy(
+            from_logits=True)(y_true, y_pred) \
+               + sparsity_loss_weight * total_entropy
+
+    return loss
+
+
+classifier.add_loss(custom_loss(SPARSITY_LOSS_WEIGHT, total_entropy))
+regressor.add_loss(custom_loss(SPARSITY_LOSS_WEIGHT, total_entropy))

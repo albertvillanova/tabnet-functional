@@ -9,18 +9,16 @@ DECAY_STEPS = 500  # DECAY_EVERY
 INITIAL_LEARNING_RATE = 0.02  # INIT_LEARNING_RATE
 
 
-# TODO: customize loss with total_entropy
-loss = keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-
 learning_rate = keras.optimizers.schedules.ExponentialDecay(
     INITIAL_LEARNING_RATE, DECAY_STEPS, DECAY_RATE
 )
 optimizer = keras.optimizers.Adam(learning_rate=learning_rate)
 
-metrics = [keras.metrics.SparseCategoricalAccuracy()]
+# metrics = [keras.metrics.SparseCategoricalAccuracy()]
+metrics = ['sparse_categorical_accuracy']
 
 model.compile(
-    loss=loss,
+    # loss=loss,  # not needed as previously added
     optimizer=optimizer,
     metrics=metrics,
 )
