@@ -8,17 +8,18 @@ import tensorflow_addons as tfa
 from .layers import GLU
 
 # TODO: refactorize as config
+# https://github.com/google-research/google-research/blob/master/tabnet/experiment_covertype.py
 BATCH_MOMENTUM = 0.7
 BATCH_SIZE = 32
 EPSILON = 0.00001
-FEATURE_DIM = 4
+FEATURE_DIM = 128  # 4
 NUM_CLASSES = 7
 NUM_DECISION_STEPS = 6
 NUM_FEATURES = 54
-OUTPUT_DIM = 2
+OUTPUT_DIM = 64  # 2
 RELAXATION_FACTOR = 1.5
 SPARSITY_LOSS_WEIGHT = 0.0001
-VIRTUAL_BATCH_SIZE = 4
+VIRTUAL_BATCH_SIZE = 512  # 4
 
 # Input features
 # TODO: fix shape with embeddings
